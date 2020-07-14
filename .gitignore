@@ -1,0 +1,6 @@
+# Exclude the following
+
+/Library
+/Logs
+/Packages
+/Temp
