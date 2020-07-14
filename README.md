@@ -22,7 +22,7 @@ This technique is designed for durable items, but can easily be extended to cons
 
   2. Next, under the **Automation > Cloud Script**, navigate to the **Revisions** tab. Copy and paste this [Cloud Script file](). Then, click **SAVE AS REVISION 2** and check the box for **Deploy this revision after save**.
 
-    
+​    
 
 ### Mechanic Walkthrough:
 #### Login ####
@@ -55,10 +55,10 @@ Import the following asset packages into a new or existing Unity project:
   * Ensure you have the recipe files [here](https://github.com/PlayFab/PlayFab-Samples/raw/master/Recipes/PrizeWheel/Example-Unity3d/PrizeWheelRecipe.unitypackage)
 
   1. Add assets to your project. 
-  2. Open the SampleScene scene.
+    2. Open the SampleScene scene.
     3. Change TitleId's in LoginClass.cs to your TitleId.
     4. Add your Username, TitleId, and Password for the LoginWithPlayFabRequest in LoginClass.cs.
     5. Run the scene and observe the console for call-by-call status updates.
            1. Click login to authenticate your user.
            2. Click the three buttons in the top left corresponding to the game items (cat, dog, and mango). See how the buttons change in Unity, and how the Entity Group data changes in Game Manager.
-    6. To add other players to the Entity Group as members, so these players can see the wish list, change the **id** in the **FunctionParameter** object in the **AddPlayFabIdToGroup** function in ButtonHandler.cs to the PlayFab Id belonging to the player you want to add to the Entity Group as a member.
+           3. To add other players to the Entity Group as members, so these players can see the wish list, change the **id** in the **FunctionParameter** object in the **AddPlayFabIdToGroup** function in ButtonHandler.cs to the PlayFab Id belonging to the player you want to add to the Entity Group as a member.
