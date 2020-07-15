@@ -10,7 +10,7 @@ This technique is designed for durable items, but can easily be extended to cons
   * [Catalog & CatalogItems (Bundle / Container)](https://api.playfab.com/docs/building-blocks#Catalog)
   * [Entity Groups](https://docs.microsoft.com/en-us/gaming/playfab/features/social/groups/quickstart)
 
-###Preparation:
+### Preparation ###
 
   1. Under the **Economy &gt; Catalogs** section of the Game Manager create a catalog called **game_items** and add the following items to the catalog:
 
@@ -52,13 +52,13 @@ This technique is designed for durable items, but can easily be extended to cons
 Import the following asset packages into a new or existing Unity project:
 
   * Ensure you have the latest SDK [here](https://github.com/PlayFab/UnitySDK/raw/versioned/Packages/UnitySDK.unitypackage).
-  * Ensure you have the recipe files [here](https://github.com/PlayFab/PlayFab-Samples/raw/master/Recipes/PrizeWheel/Example-Unity3d/PrizeWheelRecipe.unitypackage)
+  * Ensure you have the recipe files [here](https://github.com/PlayFab/PlayFab-Samples/raw/master/Recipes/PrizeWheel/Example-Unity3d/PrizeWheelRecipe.unitypackage).
 
-  1. Add assets to your project. 
-    2. Open the SampleScene scene.
-    3. Change TitleId's in LoginClass.cs to your TitleId.
-    4. Add your Username, TitleId, and Password for the LoginWithPlayFabRequest in LoginClass.cs.
-    5. Run the scene and observe the console for call-by-call status updates.
-           1. Click login to authenticate your user.
-           2. Click the three buttons in the top left corresponding to the game items (cat, dog, and mango). See how the buttons change in Unity, and how the Entity Group data changes in Game Manager.
-           3. To add other players to the Entity Group as members, so these players can see the wish list, change the **id** in the **FunctionParameter** object in the **AddPlayFabIdToGroup** function in ButtonHandler.cs to the PlayFab Id belonging to the player you want to add to the Entity Group as a member.
+1. Add assets to your project.
+2. Open the SampleScene scene
+3. Change TitleId's in LoginClass.cs to your TitleId.
+4. Add your Username, TitleId, and Password to the LoginWithPlayFabRequest in LoginClass.cs
+5. Run the scene and observe the console for call-by-call status updates
+   1. Click login to authenticate your user.
+   2. Click the three buttons in the top left corresponding to the game items (cat, dog, and mango). See how the buttons change in Unity, and how the Entity Group data changes in Game Manager.
+   3. To add other players to the Entity Group as members, so these players can see the wish list, change the **id** in the **FunctionParameter** object in the **AddPlayFabIdToGroup** function in Wishlist.cs to the PlayFabId belonging to the player you want to add to the Entity Group as a member.
