@@ -20,7 +20,7 @@ This technique is designed for durable items, but can easily be extended to cons
 |   dog   |  Durable   |
 |  mango  |  Durable   |
 
-  2. Next, under the **Automation > Cloud Script**, navigate to the **Revisions** tab. Copy and paste this [Cloud Script file](). Then, click **SAVE AS REVISION 2** and check the box for **Deploy this revision after save**.
+  2. Next, under the **Automation > Cloud Script**, navigate to the **Revisions** tab. Copy and paste the [Cloud Script file](./CloudScriptFile.js). Then, click **SAVE AS REVISION 2** and check the box for **Deploy this revision after save**.
 
 ​    
 
@@ -51,8 +51,8 @@ This technique is designed for durable items, but can easily be extended to cons
 #### Unity 3d Example Setup Instructions:
 Import the following asset packages into a new or existing Unity project:
 
-  * Ensure you have the latest SDK [here](https://github.com/PlayFab/UnitySDK/raw/versioned/Packages/UnitySDK.unitypackage).
-  * Ensure you have the recipe files [here](https://github.com/PlayFab/PlayFab-Samples/raw/master/Recipes/PrizeWheel/Example-Unity3d/PrizeWheelRecipe.unitypackage).
+  * Ensure you have [the latest SDK](https://github.com/PlayFab/UnitySDK/raw/versioned/Packages/UnitySDK.unitypackage).
+  * Ensure you have the [recipe files](https://github.com/PlayFab/PlayFab-Samples/raw/master/Recipes/PrizeWheel/Example-Unity3d/PrizeWheelRecipe.unitypackage).
 
 1. Add assets to your project.
 2. Open the SampleScene scene
