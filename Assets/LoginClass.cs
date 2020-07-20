@@ -94,4 +94,13 @@ public class LoginClass : MonoBehaviour {
     public static string getPlayerEntityKeyId() {
         return LoginClass.player_entityKeyId;
     }
+
+    public void AuthenticateWithPlayFab() {
+
+        Debug.Log("Logging into PlayFab...");
+
+        LoginWithCustomIDRequest request = new LoginWithCustomIDRequest() { TitleId="13C25", CustomId = SystemInfo.deviceUniqueIdentifier, CreateAccount = true };
+        PlayFabClientAPI.LoginWithCustomID(request, OnLoginSuccess, OnLoginFailure, null);
+    
+    }
 }
