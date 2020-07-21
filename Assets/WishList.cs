@@ -29,76 +29,31 @@ public class WishList : MonoBehaviour
         @param player_entityKeyType: the entity type of the player whose wish list we are searching
             for; should be title_player_account entity in most cases
         
-        Upon login, this function examines all entity groups that the player belongs to. For each group, 
-        the group name is compared to the nomenclature for wish list groups. If the group is not found, 
-        then one is created 
     */
 
     public static void FindOrCreateWishList(string player_entityKeyId, string player_entityKeyType) {
 
-        /* Create entity key for the ListMembership request */
+        PlayFab.DataModels.EntityKey ent = new PlayFab.DataModels.EntityKey { Id = player_entityKeyId, Type = player_entityKeyType };
 
-        PlayFab.GroupsModels.EntityKey entity = new PlayFab.GroupsModels.EntityKey {Id = player_entityKeyId, Type = player_entityKeyType };
+        var req = new PlayFab.DataModels.GetObjectsRequest { Entity = ent };
 
-        var request = new ListMembershipRequest { Entity = entity };
+        PlayFabDataAPI.GetObjects( req, result => {
 
-        PlayFabGroupsAPI.ListMembership( request, membershipResult => {
+            if( !result.Objects.ContainsKey("wishlist") ) {
 
-            bool found = false; // Will tell us whether the wish list entity group exists
+                // Empty so need to create
+                CreateEntityWishList();
 
-            /* 
-                Iterate through all groups the player belongs to. If the wish list entity group exists, 
-                it should be one of these groups
-            */
+            } else {
 
-            for (int i = 0; i < membershipResult.Groups.Count; i++ ) {
-                string group_name = LoginClass.getPlayerEntityKeyId() + "wishlist";
+                string wl = (string) result.Objects["wishlist"].DataObject;
 
-                /* Compare the name of the group to the nomenclature the wish list entity group name will follow */
-                
-                if( membershipResult.Groups[i].GroupName.Equals( group_name ) ) {
-
-                    found = true; // If the name matches, we found the wish list entity group
-
-                    /* Set the wish list group's entity ID and entity type so we can access the group in other functions */
-                    WishList.group_entityKeyId = membershipResult.Groups[i].Group.Id;
-                    WishList.group_entityKeyType = membershipResult.Groups[i].Group.Type;
-
-                    PlayFab.DataModels.EntityKey group_ek = new PlayFab.DataModels.EntityKey { Id = membershipResult.Groups[i].Group.Id, Type = membershipResult.Groups[i].Group.Type };
-                    GetObjectsRequest getObjectsRequest = new GetObjectsRequest { Entity = group_ek };
-
-                    /*  This is the wish list entity group. To get the wish list CSV, we need to get the object in that entity
-                        group with the "wishlist" key 
-                    */
-
-                    PlayFabDataAPI.GetObjects(getObjectsRequest, objectResult => {
-                        
-                        if( !string.IsNullOrEmpty( (string) objectResult.Objects["wishlist"].DataObject ) ) {
-                            string wl = (string) objectResult.Objects["wishlist"].DataObject;
-                            /* Set up the Unity game store. Specifically, change colors and button text if an item is on the wishlist */
-                            StoreSetup.SetUpStore(wl, false);
-                        }
-
-                    }, error => { Debug.LogError(error.GenerateErrorReport()); });
-
-                }
-            }
-
-            // AddPlayFabIdToGroup(); // Where should this go?
-
-
-            /* Wish list entity group does not exist, so create one */
-            if( !found ) {
-                /* 
-                    Wish list entity groups should follow the following nomenclature:
-                    [PlayFab title ID] + "wishlist.
-
-                    This nomenclature allows us to find the group by name in the future.
-                */
-                string group_name = LoginClass.getPlayerEntityKeyId() + "wishlist";
-                CreateWishlist(group_name);
+                // Exists so can set up store
+                StoreSetup.SetUpStore(wl, false);
 
             }
+
+            SetWishListPolicy();
 
         }, error => { Debug.LogError(error.GenerateErrorReport()); });
 
@@ -112,18 +67,18 @@ public class WishList : MonoBehaviour
         
         This function gets the "wishlist" object from the entity group data. If the item is on the wish list,
         this function updates the CSV by removing it. If the item is not on the wish list, this function
-        updates the CSV by adding it. It then calls UpdateGroupObject, which updates the actual entity group data.
+        updates the CSV by adding it. It then calls UpdateObject, which updates the actual entity group data.
 
     */
 
     public void UpdateWishlist(string item_id) {
 
-        /* Create entity key and request to get object data from group. */
-        PlayFab.DataModels.EntityKey group_ek = new PlayFab.DataModels.EntityKey { Id = WishList.group_entityKeyId, Type = WishList.group_entityKeyType };
-        GetObjectsRequest getObjectsRequest = new GetObjectsRequest { Entity = group_ek };
+        PlayFab.DataModels.EntityKey ek = new PlayFab.DataModels.EntityKey { Id = LoginClass.getPlayerEntityKeyId(), Type = LoginClass.getPlayerEntityKeyType() };
+
+        var getObjectRequest = new PlayFab.DataModels.GetObjectsRequest { Entity = ek };
 
         /* GetObjects to get the wish list in CSV form. */
-        PlayFabDataAPI.GetObjects(getObjectsRequest, objectResult => {
+        PlayFabDataAPI.GetObjects(getObjectRequest, objectResult => {
 
             string wl;
             bool adding_item; // This tells us whether we are adding or removing an item from the wish list
@@ -151,8 +106,8 @@ public class WishList : MonoBehaviour
                 adding_item = true;
             }
 
-            /* UpdateGroupObject is where the entity group data is actually updated */
-            UpdateGroupObject(wl, adding_item, item_id);
+            /* UpdateObject is where the entity group data is actually updated */
+            UpdateObject(wl, adding_item, item_id);
             
         }, error => {
             Debug.LogError(error.GenerateErrorReport());
@@ -237,96 +192,172 @@ public class WishList : MonoBehaviour
 
     */
 
-    private void UpdateGroupObject(string dataobj, bool adding_item, string item_id) {
+    private void UpdateObject(string dataobj, bool adding_item, string item_id) {
 
-        /* Call a Cloud Script function to update the group entity object data */
-        PlayFabCloudScriptAPI.ExecuteEntityCloudScript(new PlayFab.CloudScriptModels.ExecuteEntityCloudScriptRequest() {
+        PlayFab.DataModels.EntityKey entity = new PlayFab.DataModels.EntityKey { Id = LoginClass.getPlayerEntityKeyId(), Type = LoginClass.getPlayerEntityKeyType() };
+
+        List<PlayFab.DataModels.SetObject> ObjList = new List<PlayFab.DataModels.SetObject>();
+
+        ObjList.Add( 
+
+            new PlayFab.DataModels.SetObject {
+                ObjectName = "wishlist",
+                DataObject = dataobj
+            }
+
+        );
+
+        var request = new PlayFab.DataModels.SetObjectsRequest { 
+
+            Entity = entity,
+            Objects = ObjList
             
-            // Group entity on which we call Cloud Script function
-            Entity = new PlayFab.CloudScriptModels.EntityKey { Id = WishList.group_entityKeyId, Type = WishList.group_entityKeyType },
-            // Cloud Script function name
-            FunctionName = "addItemtoWishlist",
-            // Function parameters for Cloud Script function; prop1 is the updated CSV
-            FunctionParameter = new { prop1 = dataobj }, 
-            // Create a Playstream event, which can be found in Game Manager; helpful for debugging and logging
-            GeneratePlayStreamEvent = true
+        };
 
-        }, result => {
-            /* The Cloud Script function returned successfully, so we must update the store in our Unity game. */
+        PlayFabDataAPI.SetObjects(request, result => {
+
             if( adding_item ) {
-                /* The item with ItemID item_id was added, so update store accordingly. */
                 StoreSetup.SetUpStore(item_id, false);
-
             } else {
-                /* The item with ItemID item_id was removed, so update store accordingly. */
                 StoreSetup.SetUpStore(item_id, true);
-
             }
 
         }, error => { Debug.LogError(error.GenerateErrorReport()); });
 
     }
 
-    /* 
 
-        Execute a PlayFab Cloud Script function to create an entity group for the player's wish list. We use
-        Cloud Script because title-level data should not be changed directly from the client.
+    /*
 
-        @param group_name: the name of the entity group
+        If the wish list does not exist, we create an entity object for the player.
 
     */
 
-    private static void CreateWishlist(string group_name) {
+    private static void CreateEntityWishList() {
 
-        /* Execute Cloud Script function to create the entity group for the wishlist */
-        PlayFabCloudScriptAPI.ExecuteEntityCloudScript(new PlayFab.CloudScriptModels.ExecuteEntityCloudScriptRequest() {
-            /*  The entity is the player who should be the administrator and first member of the entity group; in our case, this is the player who
-                owns the wish list */
-            Entity = new PlayFab.CloudScriptModels.EntityKey { Id = LoginClass.getPlayerEntityKeyId(), Type = LoginClass.getPlayerEntityKeyType() },
-            // The name of the Cloud Script function we are calling
-            FunctionName = "createUserWishList",
-            // The parameter provided to your function
-            FunctionParameter = new { groupName = group_name },
-            // Optional - Shows this event in PlayStream; helpful for logging and debugging
-            GeneratePlayStreamEvent = true
+        PlayFab.DataModels.EntityKey entity = new PlayFab.DataModels.EntityKey { Id = LoginClass.getPlayerEntityKeyId(), Type = LoginClass.getPlayerEntityKeyType() };
 
-        }, result => {
+        /* SetObjects takes in a list of type SetObject. These will contain the objects that we want to set. */
 
-            JsonObject jsonResult = (JsonObject) result.FunctionResult;
+        List<PlayFab.DataModels.SetObject> ObjList = new List<PlayFab.DataModels.SetObject>();
 
-            WishList.group_entityKeyId = (string) jsonResult["ek_id"];
-            WishList.group_entityKeyType = (string) jsonResult["ek_type"];
+        /*  
+            We will add an object of type wishlist. The DataObject is empty because we are initializing the entity object,
+            as it does not exist. We do not have any ItemId's to add to the wish list yet. 
+        */
+
+        ObjList.Add(
+
+            new PlayFab.DataModels.SetObject {
+                ObjectName = "wishlist",
+                DataObject = ""
+            }
+
+        );
+
+        var request = new PlayFab.DataModels.SetObjectsRequest { 
+
+            Entity = entity,
+            Objects = ObjList
+            
+        };
+
+        /* Call PlayFab SetObjects to set the object data for the player entity. */
+
+        PlayFabDataAPI.SetObjects(request, result => {
+
+            /* The title player now has a wishlist object. */
+
+            Debug.Log("Set object successful");
 
         }, error => { Debug.LogError(error.GenerateErrorReport()); });
 
     }
 
+
     /*
 
-        Execute a PlayFab Cloud Script function to add another PlayFab player to the entity group as a member. This allows the added
-        player to view the owner's wishlist.
-
-        @param playfabid: the PlayFab ID of the player who we want to add to the wish list entity group
+        We want other players to view a player's wish list, but entity objects are not public by default. Hence,
+        we need to update the title's global policy to allow viewers to view wish list entity group data. Because
+        UpdateGlobalPolicy is an admin function, we use CloudScript to call it rather than the client.
 
     */
 
-    public static void AddPlayFabIdToGroup(string playfabid) {
-        /*  The Cloud Script function adds the member with the corresponding PlayFab ID to the entity group, so they
-            can view the wish list. */
+    public static void SetWishListPolicy() {
+
         PlayFabCloudScriptAPI.ExecuteEntityCloudScript(new PlayFab.CloudScriptModels.ExecuteEntityCloudScriptRequest() {
-            // The entity key for the group to whom we want to add a player
-            Entity = new PlayFab.CloudScriptModels.EntityKey { Id = group_entityKeyId, Type = group_entityKeyType },
+            // The entity key for the player (does not really matter in this case, but required field)
+            Entity = new PlayFab.CloudScriptModels.EntityKey { Id = LoginClass.getPlayerEntityKeyId(), Type = LoginClass.getPlayerEntityKeyType() },
             // The name of the Cloud Script function we are calling
-            FunctionName = "addPlayFabIdToGroup",
+            FunctionName = "addWishListViewer",
             // The parameter provided to your function
-            FunctionParameter = new {id = playfabid},
+            FunctionParameter = new {},
             // Optional - Shows this event in PlayStream; helpful for logging and debugging
             GeneratePlayStreamEvent = true
 
         }, result => {
 
+            Debug.Log("Policy set successfully.");
 
         }, error => { Debug.LogError(error.GenerateErrorReport()); });
+    }
+
+
+    /* 
+
+        This function gets a player's wish list.
+
+        @param PlayFabID: the PlayFabId of the user whose wish list we want to see
+
+    */
+
+    public static void ViewPlayerWishList(string PlayFabID) {
+
+        /* We have their PlayFabID, but we need their title player ID in order to make an entity key. */
+
+        PlayFabClientAPI.GetAccountInfo(new PlayFab.ClientModels.GetAccountInfoRequest {
+
+            PlayFabId = PlayFabID
+
+        }, AccountInfoResult => {
+
+            /* The below contains the title player Id */
+
+            var id = AccountInfoResult.AccountInfo.TitleInfo.TitlePlayerAccount.Id;
+
+            /* Now that we have their title player ID, we can use GetObjects to get their wish list */
+
+            PlayFabDataAPI.GetObjects(new PlayFab.DataModels.GetObjectsRequest {
+
+                /* GetObjects has an entity key parameter */
+
+                Entity = new PlayFab.DataModels.EntityKey { Id = id, Type = "title_player_account" }
+
+            }, GetObjectsResult => {
+
+                /*  
+                    GetObjects returns a dictionary of objects. We are interested in the "wishlist"
+                    key-value pair.
+                */
+
+                if( GetObjectsResult.Objects.ContainsKey("wishlist") ) {
+
+                    Debug.Log(GetObjectsResult.Objects["wishlist"].DataObject);
+
+                } else {
+
+                    Debug.Log("Player has no wish list");
+
+                }
+
+            }, error => { Debug.LogError(error.GenerateErrorReport()); }); 
+
+        }, error => {
+
+            Debug.LogError(error.GenerateErrorReport());
+
+        });
+
     }
 
 
