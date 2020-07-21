@@ -5,7 +5,7 @@
 // Cloud Script runs in the PlayFab cloud and has full access to the PlayFab Game Server API 
 // (https://api.playfab.com/Documentation/Server), and it runs in the context of a securely
 // authenticated player, so you can use it to implement logic for your game that is safe from
-// client-side exploits.
+// client-side exploits. 
 //
 // Cloud Script functions can also make web requests to external HTTP
 // endpoints, such as a database or private API for your title, which makes them a flexible
@@ -50,6 +50,21 @@ handlers.makeAPICall = function (args, context) {
     // the PlayFab API, so you don't have to write extra code to issue HTTP requests. 
     var playerStatResult = server.UpdatePlayerStatistics(request);
 };
+
+handlers.addWishListViewer = function (args, context) {
+    
+    var apiResult = entity.SetGlobalPolicy({
+        Permissions: [{
+            "Action": "Read",
+            "Effect": "Allow",
+            "Resource": "pfrn:data--*!title_player_account/Profile/Objects/wishlist",
+            "Principal": "*",
+            "Comment": "",
+            "Condition": null
+        }]
+    });
+    
+}
 
 handlers.createUserWishList = function (args, context) {
 
@@ -152,6 +167,16 @@ handlers.addPlayFabIdToGroup = function (args, context) {
         Members: eks
     });
 
+}
+
+handlers.addPlayerToGroup = function (args, context) {
+    
+    var group = entity.GetGroup({
+        GroupName: "7B211A21B584F3F1wishlist"
+    })
+    
+    log.debug(group);
+    
 }
 
 
