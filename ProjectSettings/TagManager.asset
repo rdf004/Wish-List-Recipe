@@ -9,6 +9,8 @@ TagManager:
   - Mango_Button
   - Login_Button
   - Arbitrary_Wishlist
+  - ViewWishlistField
+  - ViewWishlistButton
   layers:
   - Default
   - TransparentFX

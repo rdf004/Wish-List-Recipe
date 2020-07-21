@@ -18,6 +18,8 @@ public class StoreSetup : MonoBehaviour {
 
     public static Button Login_Button, Cat_Button, Dog_Button, Mango_Button;
 
+    public static InputField Field;
+
     /*
         When the player logs in, set up the store in our Unity game. Namely, set the button colors and text.
     */
@@ -26,6 +28,8 @@ public class StoreSetup : MonoBehaviour {
         Cat_Button = GameObject.FindGameObjectWithTag("Cat_Button").GetComponent<Button>();
         Dog_Button = GameObject.FindGameObjectWithTag("Dog_Button").GetComponent<Button>();
         Mango_Button = GameObject.FindGameObjectWithTag("Mango_Button").GetComponent<Button>();
+
+        Field = GameObject.FindGameObjectWithTag("ViewWishlistField").GetComponent<InputField>();
 
         Cat_Button.GetComponentInChildren<Text>().text = "Cat (Add to Wishlist)";
         Cat_Button.GetComponent<Image>().color = Color.white; 
@@ -90,6 +94,12 @@ public class StoreSetup : MonoBehaviour {
                 }
             }
         }
+
+    }
+
+    public void GetWishList() {
+
+        WishList.ViewPlayerWishList(Field.text);
 
     }
 
