@@ -37,7 +37,7 @@ public class LoginClass : MonoBehaviour {
             PlayFabSettings.staticSettings.TitleId = "13C25";
         }
 
-        var request = new LoginWithPlayFabRequest {Username = "shane", TitleId = "13C25", Password = "leetcode"};
+        var request = new LoginWithPlayFabRequest {Username = "kobe", TitleId = "13C25", Password = "ripharambe"};
         PlayFabClientAPI.LoginWithPlayFab(request, OnLoginSuccess, OnLoginFailure);
 
     }
