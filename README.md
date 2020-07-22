@@ -21,9 +21,20 @@ This technique is designed for durable items, but can easily be extended to cons
 |   dog   |  Durable   |
 |  mango  |  Durable   |
 
-  2. Next, under the **Automation > Cloud Script**, navigate to the **Revisions** tab. Copy and paste the [Cloud Script file](./CloudScriptFile.js). Then, click **SAVE AS REVISION 2** and check the box for **Deploy this revision after save**.
+2. Next, under **Settings > Title Settings > API Features**, find the **Entity Global Title Policy** and add the following object to the array of policy objects.
 
-​    
+```
+  {
+    "Action": "Read",
+    "Effect": "Allow",
+    "Resource": "pfrn:data--*!*/Profile/Objects/wishlist",
+    "Principal": "*",
+    "Comment": "",
+    "Condition": null
+  }
+```
+
+We want other players to view a player's wish list, but entity objects are not public by default. Still, we want the wishlist key-value pair to be public. Hence, we need to pudate the title's global policy to allow viewers to view wish list entity group data. We want this to be a title-wide policy so that it applies to all players.
 
 ### Mechanic Walkthrough:
 #### Login ####

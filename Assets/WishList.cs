@@ -53,8 +53,6 @@ public class WishList : MonoBehaviour
 
             }
 
-            SetWishListPolicy();
-
         }, error => { Debug.LogError(error.GenerateErrorReport()); });
 
     }
@@ -273,35 +271,6 @@ public class WishList : MonoBehaviour
         }, error => { Debug.LogError(error.GenerateErrorReport()); });
 
     }
-
-
-    /*
-
-        We want other players to view a player's wish list, but entity objects are not public by default. Hence,
-        we need to update the title's global policy to allow viewers to view wish list entity group data. Because
-        UpdateGlobalPolicy is an admin function, we use CloudScript to call it rather than the client.
-
-    */
-
-    public static void SetWishListPolicy() {
-
-        PlayFabCloudScriptAPI.ExecuteEntityCloudScript(new PlayFab.CloudScriptModels.ExecuteEntityCloudScriptRequest() {
-            // The entity key for the player (does not really matter in this case, but required field)
-            Entity = new PlayFab.CloudScriptModels.EntityKey { Id = LoginClass.getPlayerEntityKeyId(), Type = LoginClass.getPlayerEntityKeyType() },
-            // The name of the Cloud Script function we are calling
-            FunctionName = "addWishListViewer",
-            // The parameter provided to your function
-            FunctionParameter = new {},
-            // Optional - Shows this event in PlayStream; helpful for logging and debugging
-            GeneratePlayStreamEvent = true
-
-        }, result => {
-
-            Debug.Log("Policy set successfully.");
-
-        }, error => { Debug.LogError(error.GenerateErrorReport()); });
-    }
-
 
     /* 
 
